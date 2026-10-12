@@ -1211,7 +1211,7 @@ describe('SkillsPage', () => {
     await user.click(await screen.findByText('common.operation.duplicate'))
 
     await waitFor(() => {
-      expect(toast.error).not.toHaveBeenCalled()
+      expect(toast.error).toHaveBeenCalledWith('skill.skillManagement.duplicateFailed')
     })
     expect(mocks.push).not.toHaveBeenCalled()
   })

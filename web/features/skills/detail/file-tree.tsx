@@ -316,14 +316,10 @@ export function FileTree({
   }
 
   const fileMutation = useMutation(
-    consoleQuery.workspaces.current.skills.bySkillId.files.patch.mutationOptions({
-      context: { silent: true },
-    }),
+    consoleQuery.workspaces.current.skills.bySkillId.files.patch.mutationOptions(),
   )
   const fileCheckMutation = useMutation(
-    consoleQuery.workspaces.current.skills.bySkillId.files.check.post.mutationOptions({
-      context: { silent: true },
-    }),
+    consoleQuery.workspaces.current.skills.bySkillId.files.check.post.mutationOptions(),
   )
   const tree = toFileTree(files)
   const flatTree = flattenFileTree(tree)
@@ -588,7 +584,9 @@ export function FileTree({
               item.path,
               (refreshedDetail.files ?? []).map((file) => file.path),
             )
-          } catch {}
+          } catch {
+            // Replace remains available even if refreshing the latest paths fails.
+          }
         }
         patchUploadItem(item.id, {
           error: errorMessage,

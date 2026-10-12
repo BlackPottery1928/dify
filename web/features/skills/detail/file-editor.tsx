@@ -182,9 +182,7 @@ export function FileEditor({
   const liveBodyEditorRef = useRef<HTMLDivElement>(null)
   const sourceTextareaRef = useRef<HTMLTextAreaElement>(null)
   const { isPending: isSavingDraft, mutateAsync: saveDraftFile } = useMutation(
-    consoleQuery.workspaces.current.skills.bySkillId.files.patch.mutationOptions({
-      context: { silent: true },
-    }),
+    consoleQuery.workspaces.current.skills.bySkillId.files.patch.mutationOptions(),
   )
   const filePath = file?.path
   const codeLanguage = getSkillCodeLanguage(file)
@@ -472,7 +470,9 @@ export function FileEditor({
         useFetchedDetail = true
         latestDetail = fetchedDetail
       }
-    } catch {}
+    } catch {
+      // Keep the snapshot fetched when the conflict was detected as a fallback.
+    }
 
     const latestFile = latestDetail ? findFileByPath(latestDetail.files ?? [], filePath) : undefined
     const fallbackContent = saveConflictReloadContentRef.current ?? saveConflictReloadContent

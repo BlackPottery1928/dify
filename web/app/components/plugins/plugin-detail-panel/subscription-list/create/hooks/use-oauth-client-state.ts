@@ -146,6 +146,14 @@ export const useOAuthClientState = ({
         onOpenChange(false)
         toast.success(t(($) => $['modal.oauth.remove.success'], { ns: 'pluginTrigger' }))
       },
+      onError: (error: unknown) => {
+        toast.error(
+          getErrorMessage(
+            error,
+            t(($) => $['modal.oauth.remove.failed'], { ns: 'pluginTrigger' }),
+          ),
+        )
+      },
     })
   }, [providerName, deleteOAuth, onOpenChange, t])
 
@@ -218,6 +226,9 @@ export const useOAuthClientState = ({
               setAuthorizationStatus(AuthorizationStatusEnum.Success)
               clearInterval(pollInterval)
             }
+          },
+          onError: () => {
+            // Continue polling on error - auth might still be in progress
           },
         },
       )

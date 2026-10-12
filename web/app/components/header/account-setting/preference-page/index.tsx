@@ -47,9 +47,7 @@ export default function PreferencePage() {
     ...userProfileQueryOptions(),
     select: (data) => data.profile,
   })
-  const updateProfile = useMutation(
-    consoleQuery.account.profile.patch.mutationOptions({ context: { silent: true } }),
-  )
+  const updateProfile = useMutation(consoleQuery.account.profile.patch.mutationOptions())
   const [editing, setEditing] = useState(false)
   const { t } = useTranslation(['common', 'accountSettings'])
   const router = useRouter()

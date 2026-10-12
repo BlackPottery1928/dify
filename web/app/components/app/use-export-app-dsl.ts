@@ -41,10 +41,9 @@ export type ExportWorkflowAppDslResult =
     }
 
 async function getSecretEnvironmentVariables(appId: string) {
-  const { items } = await consoleClient.apps.byAppId.workflows.draft.environmentVariables.get(
-    { params: { app_id: appId } },
-    { context: { silent: true } },
-  )
+  const { items } = await consoleClient.apps.byAppId.workflows.draft.environmentVariables.get({
+    params: { app_id: appId },
+  })
   return items.filter((environmentVariable) => environmentVariable.value_type === 'secret')
 }
 
@@ -56,18 +55,15 @@ export async function exportAppDslFile({
   versionId,
   format,
 }: ExportAppDslInput) {
-  const response = await consoleClient.apps.byAppId.export.get(
-    {
-      params: { app_id: appId },
-      query: {
-        include_secret: includeSecret,
-        ...(workflowId ? { workflow_id: workflowId } : {}),
-        ...(versionId ? { version_id: versionId } : {}),
-        ...(format && { format }),
-      },
+  const response = await consoleClient.apps.byAppId.export.get({
+    params: { app_id: appId },
+    query: {
+      include_secret: includeSecret,
+      ...(workflowId ? { workflow_id: workflowId } : {}),
+      ...(versionId ? { version_id: versionId } : {}),
+      ...(format && { format }),
     },
-    { context: { silent: true } },
-  )
+  })
 
   if (response instanceof Blob) {
     const name = response instanceof File ? response.name : undefined
@@ -153,9 +149,7 @@ export function useExportWorkflowAppDsl() {
       try {
         secretEnvList = await getSecretEnvironmentVariables(input.appId)
       } catch (error) {
-        toast.error(messages.packageError, {
-          description: await getAppTransferErrorMessage(error),
-        })
+        toast.error(messages.packageError, { description: await getAppTransferErrorMessage(error) })
         throw error
       }
 

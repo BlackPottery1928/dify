@@ -89,7 +89,6 @@ export async function uploadSkillFile(
       {
         bodyStringify: false,
         deleteContentType: true,
-        silent: true,
       },
     )
   } catch (error) {
@@ -124,7 +123,7 @@ export async function fetchSkillFileBlob({
   const response = await get<Response>(
     `/workspaces/current/skills/${encodeURIComponent(skillId)}/files/content?${params.toString()}`,
     {},
-    { needAllResponseContent: true, silent: true },
+    { needAllResponseContent: true },
   )
   return response.blob()
 }
@@ -133,7 +132,7 @@ export async function fetchSkillArchiveBlob(skillId: string) {
   const response = await get<Response>(
     `/workspaces/current/skills/${encodeURIComponent(skillId)}/export`,
     {},
-    { needAllResponseContent: true, silent: true },
+    { needAllResponseContent: true },
   )
   return response.blob()
 }
@@ -178,7 +177,6 @@ export function sendSkillAssistMessage({
       },
     },
     {
-      silent: true,
       getAbortController,
       onCompleted: (hasError, errorMessage) => {
         onCompleted?.(streamErrorHandled && hasError ? false : hasError, errorMessage)
