@@ -47,7 +47,9 @@ export default function PreferencePage() {
     ...userProfileQueryOptions(),
     select: (data) => data.profile,
   })
-  const updateProfile = useMutation(consoleQuery.account.profile.patch.mutationOptions())
+  const updateProfile = useMutation(
+    consoleQuery.account.profile.patch.mutationOptions({ context: { silent: true } }),
+  )
   const [editing, setEditing] = useState(false)
   const { t } = useTranslation(['common', 'accountSettings'])
   const router = useRouter()
@@ -76,7 +78,9 @@ export default function PreferencePage() {
       setLocaleOnClient(item.value.toString() as Locale, false)
       router.refresh()
     } catch (e) {
-      toast.error((e as Error).message)
+      toast.error(
+        e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
+      )
     } finally {
       setEditing(false)
     }
@@ -86,7 +90,9 @@ export default function PreferencePage() {
     try {
       await updateProfile.mutateAsync({ body: { timezone: item.value } })
     } catch (e) {
-      toast.error((e as Error).message)
+      toast.error(
+        e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
+      )
     } finally {
       setEditing(false)
     }

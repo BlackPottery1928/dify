@@ -9,17 +9,10 @@ import { render } from '@/test/console/render'
 import { timezones } from '@/utils/timezone'
 import PreferencePage from '../index'
 
-const mockGet = vi.hoisted(() => vi.fn())
-const mockRequest = vi.hoisted(() => vi.fn())
+const mockFetch = vi.fn()
 const mockRefresh = vi.fn()
 let mockLocale: string | undefined = 'en-US'
 let mockUserProfile: GetAccountProfileResponse
-
-vi.mock('@/service/base', () => ({
-  get: mockGet,
-  request: mockRequest,
-  sseGeneratorPost: vi.fn(),
-}))
 
 vi.mock('@/next/navigation', () => ({
   useRouter: () => ({ refresh: mockRefresh }),
@@ -93,8 +86,8 @@ beforeEach(() => {
     new Response(JSON.stringify(mockUserProfile), {
       headers: { 'content-type': 'application/json' },
     })
-  mockGet.mockImplementation(async () => profileResponse())
-  mockRequest.mockImplementation(async () => profileResponse())
+  mockFetch.mockImplementation(async () => profileResponse())
+  vi.stubGlobal('fetch', mockFetch)
 })
 
 // Rendering
@@ -149,17 +142,19 @@ describe('PreferencePage - Interactions', () => {
     await selectOption('common.language.displayLanguage', chinese.name)
 
     await waitFor(() => {
-      expect(mockRequest).toHaveBeenCalled()
+      expect(mockFetch).toHaveBeenCalled()
     })
-    expect(mockRequest.mock.calls[0]?.[0]).toEqual(expect.stringContaining('/account/profile'))
-    const request = mockRequest.mock.calls[0]?.[2]?.request as Request
+    expect(mockFetch.mock.calls[0]?.[0].url).toEqual(expect.stringContaining('/account/profile'))
+    const request = new Request(mockFetch.mock.calls[0]?.[0], mockFetch.mock.calls[0]?.[1])
     expect(request.method).toBe('PATCH')
     await expect(request.json()).resolves.toEqual({ interface_language: chinese.value })
   })
 
   it('should show error toast when language update fails', async () => {
     const chinese = getLanguageOption('zh-Hans')
-    mockRequest.mockRejectedValueOnce(new Error('Update failed'))
+    mockFetch.mockResolvedValueOnce(
+      Response.json({ code: 'update_failed', message: 'Update failed' }, { status: 400 }),
+    )
 
     renderPage()
 
@@ -176,17 +171,19 @@ describe('PreferencePage - Interactions', () => {
     await selectOption('common.language.timezone', midwayTimezone.name)
 
     await waitFor(() => {
-      expect(mockRequest).toHaveBeenCalled()
+      expect(mockFetch).toHaveBeenCalled()
     })
-    expect(mockRequest.mock.calls[0]?.[0]).toEqual(expect.stringContaining('/account/profile'))
-    const request = mockRequest.mock.calls[0]?.[2]?.request as Request
+    expect(mockFetch.mock.calls[0]?.[0].url).toEqual(expect.stringContaining('/account/profile'))
+    const request = new Request(mockFetch.mock.calls[0]?.[0], mockFetch.mock.calls[0]?.[1])
     expect(request.method).toBe('PATCH')
     await expect(request.json()).resolves.toEqual({ timezone: midwayTimezone.value })
   }, 15000)
 
   it('should show error toast when timezone update fails', async () => {
     const midwayTimezone = getTimezoneOption('Pacific/Midway')
-    mockRequest.mockRejectedValueOnce(new Error('Timezone failed'))
+    mockFetch.mockResolvedValueOnce(
+      Response.json({ code: 'update_failed', message: 'Timezone failed' }, { status: 503 }),
+    )
 
     renderPage()
 
