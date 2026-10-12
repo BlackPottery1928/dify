@@ -55,6 +55,7 @@ import Link from '@/next/link'
 import { useRouter } from '@/next/navigation'
 import { consoleQuery } from '@/service/console'
 import { downloadBlob } from '@/utils/download'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { formatFileSize } from '@/utils/format'
 import { fetchSkillArchiveBlob } from './client'
 import { SkillReferencesList, SkillReferencesListSkeleton } from './detail/skill-metadata'
@@ -307,8 +308,10 @@ function DeleteSkillDialog({
           invalidateSkillListQueries(queryClient)
           onOpenChange(false)
         },
-        onError: () => {
-          toast.error(t(($) => $['skillManagement.deleteFailed']))
+        onError: (caughtError) => {
+          reportErrorOnce(caughtError, () =>
+            toast.error(t(($) => $['skillManagement.deleteFailed'])),
+          )
         },
       },
     )
@@ -427,8 +430,8 @@ function SkillCard({
     onSuccess: (blob) => {
       downloadBlob({ data: blob, fileName: `${skill.name}.zip` })
     },
-    onError: () => {
-      toast.error(tCommon(($) => $['operation.downloadFailed']))
+    onError: (caughtError) => {
+      reportErrorOnce(caughtError, () => toast.error(tCommon(($) => $['operation.downloadFailed'])))
     },
   })
   const isDraft = !skill.latest_published_version_id
@@ -452,8 +455,10 @@ function SkillCard({
           invalidateSkillListQueries(queryClient)
           router.push(`/skills/${copiedSkill.id}?rename=true`)
         },
-        onError: () => {
-          toast.error(t(($) => $['skillManagement.duplicateFailed']))
+        onError: (caughtError) => {
+          reportErrorOnce(caughtError, () =>
+            toast.error(t(($) => $['skillManagement.duplicateFailed'])),
+          )
         },
       },
     )
@@ -1058,10 +1063,12 @@ export default function SkillsPage() {
         },
         onError: async (error) => {
           const normalizedError = error
-          toast.error(
-            getSkillErrorCode(normalizedError) === 'skill_limit_exceeded'
-              ? t(($) => $['skillManagement.errors.workspaceLimit'])
-              : t(($) => $['skillManagement.createFailed']),
+          reportErrorOnce(error, () =>
+            toast.error(
+              getSkillErrorCode(normalizedError) === 'skill_limit_exceeded'
+                ? t(($) => $['skillManagement.errors.workspaceLimit'])
+                : t(($) => $['skillManagement.createFailed']),
+            ),
           )
         },
       },
@@ -1087,22 +1094,28 @@ export default function SkillsPage() {
           const normalizedError = error
           const errorCode = getSkillErrorCode(normalizedError)
           if (errorCode === 'skill_name_conflict') {
-            toast.error(
-              t(($) => $['skillManagement.errors.nameConflict'], {
-                name: getSkillErrorDetailString(normalizedError, 'name') ?? '',
-              }),
+            reportErrorOnce(error, () =>
+              toast.error(
+                t(($) => $['skillManagement.errors.nameConflict'], {
+                  name: getSkillErrorDetailString(normalizedError, 'name') ?? '',
+                }),
+              ),
             )
             return
           }
           if (errorCode === 'skill_limit_exceeded') {
-            toast.error(t(($) => $['skillManagement.errors.workspaceLimit']))
+            reportErrorOnce(error, () =>
+              toast.error(t(($) => $['skillManagement.errors.workspaceLimit'])),
+            )
             return
           }
           if (errorCode === 'missing_skill_md') {
-            toast.error(t(($) => $['skillManagement.errors.missingSkillMd']))
+            reportErrorOnce(error, () =>
+              toast.error(t(($) => $['skillManagement.errors.missingSkillMd'])),
+            )
             return
           }
-          toast.error(t(($) => $['skillManagement.importFailed']))
+          reportErrorOnce(error, () => toast.error(t(($) => $['skillManagement.importFailed'])))
         },
       },
     )

@@ -5,6 +5,7 @@ import { getAppTransferErrorMessage } from '@/app/components/app/transfer-error'
 import { toast } from '@/app/notifications'
 import { consoleQuery } from '@/service/console'
 import { useCheckPipelineDependencies } from '@/service/use-pipeline'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { useStore as usePluginDependenciesStore } from './store'
 
 export const usePluginDependencies = () => {
@@ -37,11 +38,13 @@ export const usePluginDependencies = () => {
         return true
       } catch (error) {
         setDependencies([])
-        toast.error(
-          t(($) => $.error, { ns: 'common' }),
-          {
-            description: await getAppTransferErrorMessage(error),
-          },
+        await reportErrorOnce(error, async () =>
+          toast.error(
+            t(($) => $.error, { ns: 'common' }),
+            {
+              description: await getAppTransferErrorMessage(error),
+            },
+          ),
         )
         return false
       }

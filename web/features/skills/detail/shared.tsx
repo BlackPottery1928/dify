@@ -18,6 +18,7 @@ import { toast } from '@/app/notifications'
 import { getFileIconType } from '@/features/agent-v2/file-icon'
 import { ApiError } from '@/service/api-error'
 import { consoleClient, consoleQuery } from '@/service/console'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import {
   getSkillErrorCode,
   getSkillErrorDetailNumber,
@@ -1392,7 +1393,9 @@ export function showSkillErrorToast(error: unknown, fallbackMessage: string) {
 }
 
 async function showSkillErrorToastAsync(error: unknown, fallbackMessage: string) {
-  toast.error((await getAsyncSkillErrorMessage(error)) ?? fallbackMessage)
+  await reportErrorOnce(error, async () =>
+    toast.error((await getAsyncSkillErrorMessage(error)) ?? fallbackMessage),
+  )
 }
 
 export function getSkillCodeLanguage(file: SkillFileResponse | undefined) {

@@ -33,6 +33,7 @@ import { consoleQuery } from '@/service/console'
 import { AppModeEnum as AppMode } from '@/types/app'
 import { getRedirection } from '@/utils/app-redirection'
 import { trackCreateApp } from '@/utils/create-app-tracking'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { resolveImportedAppRedirectionTarget } from '@/utils/imported-app-redirection'
 import { getAppTransferErrorMessage } from '../transfer-error'
 import DSLConfirmModal from './dsl-confirm-modal'
@@ -238,11 +239,13 @@ function CreateFromDSLModal({
 
       response = await importMutation.mutateAsync(source)
     } catch (error) {
-      toast.error(
-        t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
-        {
-          description: await getAppTransferErrorMessage(error),
-        },
+      await reportErrorOnce(error, async () =>
+        toast.error(
+          t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
+          {
+            description: await getAppTransferErrorMessage(error),
+          },
+        ),
       )
       return
     }
@@ -258,11 +261,13 @@ function CreateFromDSLModal({
         params: { import_id: pendingImport.id },
       })
     } catch (error) {
-      toast.error(
-        t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
-        {
-          description: await getAppTransferErrorMessage(error),
-        },
+      await reportErrorOnce(error, async () =>
+        toast.error(
+          t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
+          {
+            description: await getAppTransferErrorMessage(error),
+          },
+        ),
       )
       return
     }

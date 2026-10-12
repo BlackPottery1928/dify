@@ -11,6 +11,7 @@ import { toast } from '@/app/notifications'
 import { ApiError } from '@/service/api-error'
 import { checkEmailExisted, resetEmail, sendVerifyCode, verifyEmail } from '@/service/common'
 import { useLogout } from '@/service/use-common'
+import { reportErrorOnce } from '@/utils/error-feedback'
 
 type Props = {
   onClose: () => void
@@ -83,7 +84,9 @@ const EmailChangeModal = ({ onClose, email }: Props) => {
       startCount()
       if (res.data) setStepToken(res.data)
     } catch (error) {
-      toast.error(`Error sending verification code: ${getErrorMessage(error)}`)
+      reportErrorOnce(error, () =>
+        toast.error(`Error sending verification code: ${getErrorMessage(error)}`),
+      )
     }
   }
 
@@ -106,7 +109,7 @@ const EmailChangeModal = ({ onClose, email }: Props) => {
         toast.error('Verifying email failed')
       }
     } catch (error) {
-      toast.error(`Error verifying email: ${getErrorMessage(error)}`)
+      reportErrorOnce(error, () => toast.error(`Error verifying email: ${getErrorMessage(error)}`))
     }
   }
 
@@ -186,7 +189,7 @@ const EmailChangeModal = ({ onClose, email }: Props) => {
       })
       await logout()
     } catch (error) {
-      toast.error(`Error changing email: ${getErrorMessage(error)}`)
+      reportErrorOnce(error, () => toast.error(`Error changing email: ${getErrorMessage(error)}`))
     }
   }
 

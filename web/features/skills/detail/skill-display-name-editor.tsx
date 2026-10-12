@@ -7,6 +7,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/app/notifications'
 import { consoleQuery } from '@/service/console'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import {
   getAsyncSkillErrorPayload,
   getErrorCode,
@@ -105,13 +106,15 @@ export function SkillDisplayNameEditor({
       setDraftName(displayName)
       const errorPayload = await getAsyncSkillErrorPayload(error)
       if (getErrorCode(errorPayload ?? error) === 'skill_name_conflict') {
-        toast.error(
-          t(($) => $['skillManagement.errors.nameConflict'], {
-            name: getErrorDetailString(errorPayload ?? error, 'name') ?? '',
-          }),
+        reportErrorOnce(error, () =>
+          toast.error(
+            t(($) => $['skillManagement.errors.nameConflict'], {
+              name: getErrorDetailString(errorPayload ?? error, 'name') ?? '',
+            }),
+          ),
         )
       } else {
-        toast.error(t(($) => $['skillManagement.detail.saveFailed']))
+        reportErrorOnce(error, () => toast.error(t(($) => $['skillManagement.detail.saveFailed'])))
       }
     } finally {
       submittingRef.current = false

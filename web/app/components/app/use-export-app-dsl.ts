@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from '@/app/notifications'
 import { consoleClient } from '@/service/console'
 import { downloadBlob } from '@/utils/download'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { getAppTransferErrorMessage } from './transfer-error'
 
 type ExportAppDslInput = {
@@ -153,7 +154,11 @@ export function useExportWorkflowAppDsl() {
       try {
         secretEnvList = await getSecretEnvironmentVariables(input.appId)
       } catch (error) {
-        toast.error(messages.packageError, { description: await getAppTransferErrorMessage(error) })
+        await reportErrorOnce(error, async () =>
+          toast.error(messages.packageError, {
+            description: await getAppTransferErrorMessage(error),
+          }),
+        )
         throw error
       }
 

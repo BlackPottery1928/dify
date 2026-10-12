@@ -25,6 +25,7 @@ import Link from '@/next/link'
 import { useRouter, useSearchParams } from '@/next/navigation'
 import { consoleQuery } from '@/service/console'
 import { useOneMoreStep } from '@/service/use-common'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { replaceLoginRedirect } from '@/utils/login-redirect.client'
 import { timezones } from '@/utils/timezone'
 import { basePath } from '@/utils/var'
@@ -110,7 +111,9 @@ const OneMoreStep = () => {
       replaceLoginRedirect(resolvePostLoginRedirect(searchParams), router.replace, basePath)
     } catch (error: unknown) {
       if (hasStatus(error) && error.status === 400)
-        toast.error(t(($) => $.invalidInvitationCode, { ns: 'login' }))
+        reportErrorOnce(error, () =>
+          toast.error(t(($) => $.invalidInvitationCode, { ns: 'login' })),
+        )
     }
   }
 

@@ -14,6 +14,7 @@ import { DSLImportStatus } from '@/models/app'
 import { useRouter } from '@/next/navigation'
 import { consoleQuery } from '@/service/console'
 import { getRedirection } from '@/utils/app-redirection'
+import { reportErrorOnce } from '@/utils/error-feedback'
 import { resolveImportedAppRedirectionTarget } from '@/utils/imported-app-redirection'
 
 type ResponseCallback = {
@@ -123,11 +124,13 @@ export const useImportDSL = () => {
           onFailed?.()
         }
       } catch (error) {
-        toast.error(
-          t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
-          {
-            description: await getAppTransferErrorMessage(error),
-          },
+        await reportErrorOnce(error, async () =>
+          toast.error(
+            t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
+            {
+              description: await getAppTransferErrorMessage(error),
+            },
+          ),
         )
         onFailed?.()
       } finally {
@@ -212,11 +215,13 @@ export const useImportDSL = () => {
           }
         }
       } catch (error) {
-        toast.error(
-          t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
-          {
-            description: await getAppTransferErrorMessage(error),
-          },
+        await reportErrorOnce(error, async () =>
+          toast.error(
+            t(($) => $['newApp.appCreateFailed'], { ns: 'app' }),
+            {
+              description: await getAppTransferErrorMessage(error),
+            },
+          ),
         )
         onFailed?.()
       } finally {
