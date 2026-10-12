@@ -10,7 +10,6 @@ import { toast } from '@/app/notifications'
 import { useEventEmitterContextContext } from '@/context/event-emitter'
 import { useParams } from '@/next/navigation'
 import { consoleClient, consoleQuery } from '@/service/console'
-import { reportErrorOnce } from '@/utils/error-feedback'
 import { useNodesSyncDraftByCanEdit } from './use-nodes-sync-draft'
 
 type DoSyncWorkflowDraft = ReturnType<typeof useNodesSyncDraft>['doSyncWorkflowDraft']
@@ -60,11 +59,9 @@ const useDSLBase = (doSyncWorkflowDraft: DoSyncWorkflowDraft) => {
       try {
         return await exportWorkflow({ include, workflowId })
       } catch (error) {
-        await reportErrorOnce(error, async () =>
-          toast.error(
-            t(($) => $.exportAppFailed, { ns: 'app' }),
-            { description: await getAppTransferErrorMessage(error) },
-          ),
+        toast.error(
+          t(($) => $.exportAppFailed, { ns: 'app' }),
+          { description: await getAppTransferErrorMessage(error) },
         )
         return false
       }
@@ -91,13 +88,11 @@ const useDSLBase = (doSyncWorkflowDraft: DoSyncWorkflowDraft) => {
         },
       } satisfies ExportSecretEnvironmentEvent)
     } catch (error) {
-      await reportErrorOnce(error, async () =>
-        toast.error(
-          t(($) => $.exportAppFailed, { ns: 'app' }),
-          {
-            description: await getAppTransferErrorMessage(error),
-          },
-        ),
+      toast.error(
+        t(($) => $.exportAppFailed, { ns: 'app' }),
+        {
+          description: await getAppTransferErrorMessage(error),
+        },
       )
     }
   }, [appDetail, eventEmitter, handleExportDSL, t])

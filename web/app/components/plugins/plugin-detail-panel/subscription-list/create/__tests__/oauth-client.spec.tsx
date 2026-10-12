@@ -405,7 +405,7 @@ describe('OAuthClientSettingsModal', () => {
         onSuccess()
       })
       mockInitiateOAuth.mockImplementation((provider, { onError }) => {
-        onError(new Error('OAuth failed'))
+        onError?.(new Error('OAuth failed'))
       })
 
       render(<OAuthClientSettingsModal {...defaultProps} />)
@@ -502,7 +502,7 @@ describe('OAuthClientSettingsModal', () => {
       expect(mockOnOpenChange).toHaveBeenCalledWith(false)
     })
 
-    it('should show error toast when remove fails', () => {
+    it('leaves request error feedback to the transport when remove fails', () => {
       const configWithCustomEnabled = createMockOAuthConfig({
         system_configured: false,
         custom_enabled: true,
@@ -510,7 +510,7 @@ describe('OAuthClientSettingsModal', () => {
       })
 
       mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError(new Error('Delete failed'))
+        onError?.(new Error('Delete failed'))
       })
 
       render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
@@ -518,10 +518,7 @@ describe('OAuthClientSettingsModal', () => {
       const removeButton = screen.getByText('common.operation.remove')
       fireEvent.click(removeButton)
 
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'Delete failed',
-      })
+      expect(mockToastNotify).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }))
     })
   })
 
@@ -641,7 +638,7 @@ describe('OAuthClientSettingsModal', () => {
         })
       })
       mockVerifyBuilder.mockImplementation((params, { onError }) => {
-        onError(new Error('Verify failed'))
+        onError?.(new Error('Verify failed'))
       })
 
       render(<OAuthClientSettingsModal {...defaultProps} />)
@@ -655,113 +652,6 @@ describe('OAuthClientSettingsModal', () => {
       expect(getConfirmButton()).toHaveTextContent('pluginTrigger.modal.common.authorizing')
 
       vi.useRealTimers()
-    })
-  })
-
-  describe('getErrorMessage helper', () => {
-    it('should extract error message from Error object', () => {
-      const configWithCustomEnabled = createMockOAuthConfig({
-        system_configured: false,
-        custom_enabled: true,
-        params: { client_id: 'test-id', client_secret: 'test-secret' },
-      })
-
-      mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError(new Error('Custom error message'))
-      })
-
-      render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
-
-      fireEvent.click(screen.getByText('common.operation.remove'))
-
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'Custom error message',
-      })
-    })
-
-    it('should extract error message from object with message property', () => {
-      const configWithCustomEnabled = createMockOAuthConfig({
-        system_configured: false,
-        custom_enabled: true,
-        params: { client_id: 'test-id', client_secret: 'test-secret' },
-      })
-
-      mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError({ message: 'Object error message' })
-      })
-
-      render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
-
-      fireEvent.click(screen.getByText('common.operation.remove'))
-
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'Object error message',
-      })
-    })
-
-    it('should use fallback message when error has no message', () => {
-      const configWithCustomEnabled = createMockOAuthConfig({
-        system_configured: false,
-        custom_enabled: true,
-        params: { client_id: 'test-id', client_secret: 'test-secret' },
-      })
-
-      mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError({})
-      })
-
-      render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
-
-      fireEvent.click(screen.getByText('common.operation.remove'))
-
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'pluginTrigger.modal.oauth.remove.failed',
-      })
-    })
-
-    it('should use fallback when error.message is not a string', () => {
-      const configWithCustomEnabled = createMockOAuthConfig({
-        system_configured: false,
-        custom_enabled: true,
-        params: { client_id: 'test-id', client_secret: 'test-secret' },
-      })
-
-      mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError({ message: 123 })
-      })
-
-      render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
-
-      fireEvent.click(screen.getByText('common.operation.remove'))
-
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'pluginTrigger.modal.oauth.remove.failed',
-      })
-    })
-
-    it('should use fallback when error.message is empty string', () => {
-      const configWithCustomEnabled = createMockOAuthConfig({
-        system_configured: false,
-        custom_enabled: true,
-        params: { client_id: 'test-id', client_secret: 'test-secret' },
-      })
-
-      mockDeleteOAuth.mockImplementation((provider, { onError }) => {
-        onError({ message: '' })
-      })
-
-      render(<OAuthClientSettingsModal {...defaultProps} oauthConfig={configWithCustomEnabled} />)
-
-      fireEvent.click(screen.getByText('common.operation.remove'))
-
-      expect(mockToastNotify).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'pluginTrigger.modal.oauth.remove.failed',
-      })
     })
   })
 
@@ -945,7 +835,7 @@ describe('OAuthClientSettingsModal', () => {
         onSuccess()
       })
       mockInitiateOAuth.mockImplementation((provider, { onError }) => {
-        onError(new Error('OAuth failed'))
+        onError?.(new Error('OAuth failed'))
       })
 
       render(<OAuthClientSettingsModal {...defaultProps} />)

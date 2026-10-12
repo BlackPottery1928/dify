@@ -19,7 +19,6 @@ import { setLocaleOnClient } from '@/i18n/client'
 import { languages } from '@/i18n/language'
 import { useRouter } from '@/next/navigation'
 import { consoleQuery } from '@/service/console'
-import { reportErrorOnce } from '@/utils/error-feedback'
 import { timezones } from '@/utils/timezone'
 
 type SelectOption = {
@@ -79,10 +78,8 @@ export default function PreferencePage() {
       setLocaleOnClient(item.value.toString() as Locale, false)
       router.refresh()
     } catch (e) {
-      reportErrorOnce(e, () =>
-        toast.error(
-          e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
-        ),
+      toast.error(
+        e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
       )
     } finally {
       setEditing(false)
@@ -93,10 +90,8 @@ export default function PreferencePage() {
     try {
       await updateProfile.mutateAsync({ body: { timezone: item.value } })
     } catch (e) {
-      reportErrorOnce(e, () =>
-        toast.error(
-          e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
-        ),
+      toast.error(
+        e instanceof Error ? e.message : t(($) => $['api.actionFailed'], { ns: 'common' }),
       )
     } finally {
       setEditing(false)

@@ -17,7 +17,6 @@ import { useEventEmitterContextContext } from '@/context/event-emitter'
 import { DSLImportMode, DSLImportStatus } from '@/models/app'
 import { consoleQuery } from '@/service/console'
 import { fetchWorkflowDraft } from '@/service/workflow'
-import { reportErrorOnce } from '@/utils/error-feedback'
 import { collaborationManager } from './collaboration/core/collaboration-manager'
 import { WORKFLOW_DATA_UPDATE } from './constants'
 import {
@@ -94,13 +93,11 @@ const UpdateDSLModal = ({ appId, appMode, onCancel, onBackup, onImport }: Update
         await handleWorkflowUpdate(appId)
       } catch (error) {
         collaborationManager.emitWorkflowUpdate(appId)
-        await reportErrorOnce(error, async () =>
-          toast.error(
-            t(($) => $.error, { ns: 'common' }),
-            {
-              description: await getAppTransferErrorMessage(error),
-            },
-          ),
+        toast.error(
+          t(($) => $.error, { ns: 'common' }),
+          {
+            description: await getAppTransferErrorMessage(error),
+          },
         )
         // Reload the committed graph before the old canvas can resume autosaving.
         window.location.reload()
@@ -129,13 +126,11 @@ const UpdateDSLModal = ({ appId, appMode, onCancel, onBackup, onImport }: Update
   }
 
   const notifyImportError = async (error: unknown) => {
-    await reportErrorOnce(error, async () =>
-      toast.error(
-        t(($) => $['common.importFailure'], { ns: 'workflow' }),
-        {
-          description: await getAppTransferErrorMessage(error),
-        },
-      ),
+    toast.error(
+      t(($) => $['common.importFailure'], { ns: 'workflow' }),
+      {
+        description: await getAppTransferErrorMessage(error),
+      },
     )
   }
 

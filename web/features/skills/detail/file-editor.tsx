@@ -20,7 +20,6 @@ import { toast } from '@/app/notifications'
 import { useFormatTimeFromNow } from '@/hooks/use-format-time-from-now'
 import { consoleQuery } from '@/service/console'
 import { downloadBlob } from '@/utils/download'
-import { reportErrorOnce } from '@/utils/error-feedback'
 import { fetchSkillFileBlob } from '../client'
 import { FileTabs } from './file-tabs'
 import {
@@ -320,10 +319,8 @@ export function FileEditor({
       if (!file) return
       downloadBlob({ data: blob, fileName: getPathBaseName(file.path) })
     },
-    onError: (caughtError) => {
-      reportErrorOnce(caughtError, () =>
-        toast.error(t(($) => $['skillManagement.detail.loadFailed'])),
-      )
+    onError: () => {
+      toast.error(t(($) => $['skillManagement.detail.loadFailed']))
     },
   })
 
@@ -375,12 +372,10 @@ export function FileEditor({
       } catch (error) {
         const errorPayload = await getAsyncSkillErrorPayload(error)
         if (getErrorCode(errorPayload ?? error) === 'skill_name_conflict') {
-          reportErrorOnce(error, () =>
-            toast.error(
-              t(($) => $['skillManagement.errors.nameConflict'], {
-                name: getErrorDetailString(errorPayload ?? error, 'name') ?? '',
-              }),
-            ),
+          toast.error(
+            t(($) => $['skillManagement.errors.nameConflict'], {
+              name: getErrorDetailString(errorPayload ?? error, 'name') ?? '',
+            }),
           )
           setSaveStatus('error')
           return false
@@ -442,17 +437,15 @@ export function FileEditor({
             setSaveStatus('saved')
             onSaveConflictConfirm(handleSaveConflictReloadRef.current)
             return false
-          } catch (caughtError) {
+          } catch {
             setSaveStatus('error')
-            reportErrorOnce(caughtError, () =>
-              toast.error(t(($) => $['skillManagement.detail.saveFailed'])),
-            )
+            toast.error(t(($) => $['skillManagement.detail.saveFailed']))
             return false
           }
         }
 
         setSaveStatus('error')
-        reportErrorOnce(error, () => toast.error(t(($) => $['skillManagement.detail.saveFailed'])))
+        toast.error(t(($) => $['skillManagement.detail.saveFailed']))
         return false
       }
     },
@@ -479,9 +472,7 @@ export function FileEditor({
         useFetchedDetail = true
         latestDetail = fetchedDetail
       }
-    } catch {
-      // Keep the snapshot fetched when the conflict was detected as a fallback.
-    }
+    } catch {}
 
     const latestFile = latestDetail ? findFileByPath(latestDetail.files ?? [], filePath) : undefined
     const fallbackContent = saveConflictReloadContentRef.current ?? saveConflictReloadContent
